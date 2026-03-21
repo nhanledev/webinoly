@@ -10,7 +10,7 @@ system_info() {
 	echo "${blu}${bol}[Operating System]${end}"
 	echo "${blu}OS Info:${end}${dim} $(sudo cat /proc/version) ${end}"
 	echo "${blu}Description:${end}${dim} $(sudo lsb_release -d | cut -d':' -f 2- -s) ${end}"
-	echo "${blu}Codename:${end}${dim} $(sudo lsb_release -c | cut -d':' -f 2- -s) ${end}"
+	echo "${blu}Codename:${end}${dim} $(get_os_codename) ${end}"
 	echo "${blu}RAM:${end}${dim} $ramv ${end}"
 	echo "${blu}SWAP:${end}${dim} $swapv ${end}"
 	echo ""

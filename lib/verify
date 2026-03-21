@@ -333,7 +333,7 @@ if [[ $(conf_read nginx) == "true" ]]; then
 		local ver_two_err="1"
 	fi
 	
-	if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+	if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 		if [[ ! -f /etc/apt/trusted.gpg || -z $(grep -Foia "nginx signing key" /etc/apt/trusted.gpg) ]]; then
 			echo "- [ERROR] Nginx Apt Key not found!"
 			local ver_two_err="1"
@@ -582,7 +582,7 @@ if [[ $(conf_read php) == "true" ]]; then
 		local ver_three_err="1"
 	fi
 	
-	if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+	if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 		if [[ ! -f /etc/apt/trusted.gpg.d/ondrej_ubuntu_php.gpg || ! -s /etc/apt/trusted.gpg.d/ondrej_ubuntu_php.gpg || -z $(cat -v /etc/apt/trusted.gpg.d/ondrej_ubuntu_php.gpg | grep -m 1 '[^[:space:]]') ]]; then
 			echo "- [ERROR] PHP Apt Key not found!"
 			local ver_three_err="1"
@@ -772,7 +772,7 @@ if [[ $(conf_read mysql) == "true" ]]; then
 			echo "- [ERROR] MySQL PPA not found in sources list!"
 			local ver_four_err="1"
 		fi
-	elif [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+	elif [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 		if [[ ! -f /etc/apt/trusted.gpg || -z $(grep -Foia "mariadb signing key" /etc/apt/trusted.gpg) ]]; then
 			echo "- [ERROR] MariaDB Apt Key not found!"
 			local ver_four_err="1"
@@ -982,13 +982,13 @@ if [[ $(conf_read linux-optim) == "true" && ( -z $swa || $swa == "0" ) && $(conf
 fi
 
 # Check OS support
-if [[ $(lsb_release -i | cut -d':' -f 2 | xargs) != "Ubuntu" ]]; then
+if [[ $(is_supported_os) != "true" ]]; then
 	echo "- [ERROR] This Operating System is not supported!"
 	local ver_six_err="1"
 elif [[ $(check_ubuntu_release) != "true" ]]; then
 	echo "- [ERROR] This Ubuntu version is not supported!"
 	local ver_six_err="1"
-elif [[ $(lsb_release -c | cut -d':' -f 2 | xargs) == "focal" ]]; then
+elif [[ $(get_os_codename) == "focal" ]]; then
 	#echo "${blu}${dim}- [INFO] You should start considering moving to Ubuntu 24.04 or 22.04 ${end}${red}"
 	echo "${dim}- [WARNING] Support for Ubuntu 20.04 will be removed very soon! ${end}${red}"
 	local ver_six_war="1"

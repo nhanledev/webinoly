@@ -12,8 +12,9 @@ readonly os_supported_legacy=("focal" "20.04" "1.19.1")   # Oldest Ubuntu. Parti
 # 16.04 xenial - 1.0.0
 
 # Check OS support
-distr=$(awk -F= '/^ID=/{print $2}' /etc/os-release)
-osver=$(awk -F= '/^VERSION_CODENAME=/{print $2}' /etc/os-release)
+distr=$(awk -F= '/^ID=/{gsub(/"/, "", $2); print tolower($2)}' /etc/os-release)
+osver=$(awk -F= '/^UBUNTU_CODENAME=/{gsub(/"/, "", $2); print tolower($2)}' /etc/os-release)
+[[ -z $osver ]] && osver=$(awk -F= '/^VERSION_CODENAME=/{gsub(/"/, "", $2); print tolower($2)}' /etc/os-release)
 
 # Check for custom version
 if [[ $2 == "-ver="* ]]; then
@@ -27,7 +28,7 @@ if [[ $2 == "-ver="* ]]; then
 fi
 
 # Check for supported OS
-if [[ $distr != "ubuntu" ]] || ! [[ $osver =~ ^(${os_supported_legacy[0]}|${os_supported_stable[0]}|${os_supported_latest[0]})$ ]]; then
+if ! [[ $distr =~ ^(ubuntu|linuxmint)$ ]] || ! [[ $osver =~ ^(${os_supported_legacy[0]}|${os_supported_stable[0]}|${os_supported_latest[0]})$ ]]; then
 	echo "$(tput setaf 1)"
 	echo "[ERROR] Operating system not supported! $(tput dim)(${distr} '${osver}')"
 	echo "$(tput sgr0)"

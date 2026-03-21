@@ -30,7 +30,7 @@ purge_mysql_client() {
 		sudo rm -rf /etc/apt/sources.list.d/mysql.list
 		
 	# APT-KEY deprecated in 22.04
-	elif [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+	elif [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 		echo | sudo add-apt-repository --remove "http://mirrors.syringanetworks.net/mariadb/repo/$(conf_read mysql-ver)/ubuntu"
 		sudo apt-key del 0xF1656F24C74CD1D8
 	else
@@ -163,7 +163,7 @@ if [[ -n $purge && ( -n $html || -n $nginx ) ]]; then
 			fi
 			
 			# APT-KEY deprecated in 22.04
-			if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+			if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 				if [[ $(conf_read nginx-ppa) == "mainline" ]]; then
 					echo | sudo add-apt-repository --remove "deb https://nginx.org/packages/mainline/ubuntu/ $(check_osname) nginx"
 				else
@@ -242,7 +242,7 @@ elif [[ -n $purge && -n $php ]]; then
 			sudo apt -y purge php-imagick php-msgpack
 
 			# APT-KEY deprecated in 22.04
-			if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+			if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 				echo | sudo add-apt-repository --remove 'ppa:ondrej/php'
 				sudo apt-key del E5267A6C #ondrej
 			else
@@ -421,7 +421,7 @@ elif [[ -n $purge && -n $backups ]]; then
 				echo "${gre}${dim}Backup (duply) profiles deleted!${end}"
 			fi
 			
-			if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(jammy|focal)$ ]]; then
+			if [[ $(get_os_codename) =~ ^(jammy|focal)$ ]]; then
 				sudo pip3 uninstall -y duplicity 2>&1 | grep -v "pip as the 'root' user"
 			else
 				sudo /opt/duplicity/bin/pip uninstall -y duplicity
@@ -510,7 +510,7 @@ elif [[ -n $purge && -n $redis ]]; then
 			sudo apt -y purge php-redis
 			
 			# APT-KEY deprecated in 22.04
-			if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+			if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 				echo | sudo add-apt-repository --remove 'ppa:redislabs/redis'
 				sudo apt-key del 3FA6E3CA
 			else

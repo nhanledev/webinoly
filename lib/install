@@ -190,7 +190,7 @@ nginx_optim() {
 	sudo sed -i "/open_file_cache max /c \	open_file_cache max=$(($fd_per_process/3)) inactive=5m;" /etc/nginx/nginx.conf
 	
 	# kTLS not supported in 20.04
-	if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) == "focal" ]]; then
+	if [[ $(get_os_codename) == "focal" ]]; then
 		sudo sed -i '/ssl_conf_command Options KTLS/d' /etc/nginx/nginx.conf
 	else
 		sudo modprobe tls
@@ -553,7 +553,7 @@ nginx_tool_bkp() {
 	# Duplicity installation directly from source
 	# IMPORTANT - Specific version! This package is updated very often and we have had serious issues with some releases.
 	# IMPORTANT - Upgrade version should also be raised in update function.
-	if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(jammy|focal)$ ]]; then
+	if [[ $(get_os_codename) =~ ^(jammy|focal)$ ]]; then
 		sudo pip3 install "duplicity==${duplicity_version}" 2>&1 | grep -v "pip as the 'root' user"
 		# Temporal fix to remove warning - wait for: https://github.com/pypa/pip/issues/10556 - remove from stack purge too! --root-user-action=ignore | Remove from update function also
 	else
@@ -882,7 +882,7 @@ stack_builder() {
 		[[ $nginx =~ ^(stable|mainline)$ ]] && conf_write nginx-ppa $nginx
 		[[ $lemp =~ ^(stable|mainline)$ ]] && conf_write nginx-ppa $lemp
 		
-		if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+		if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 			sudo apt-key adv --fetch-keys 'https://nginx.org/keys/nginx_signing.key'
 			if [[ $(conf_read nginx-ppa) == "mainline" ]]; then
 				echo | sudo add-apt-repository "deb https://nginx.org/packages/mainline/ubuntu/ $(check_osname) nginx"
@@ -894,9 +894,9 @@ stack_builder() {
 			[[ ! -f /usr/share/keyrings/nginx-archive-keyring.gpg ]] && wget -nv -O- https://nginx.org/keys/nginx_signing.key | sudo gpg --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg
 			chmod 644 /usr/share/keyrings/nginx-archive-keyring.gpg
 			if [[ $(conf_read nginx-ppa) == "mainline" ]]; then
-				echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/ubuntu/ $(lsb_release -cs) nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
+				echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/ubuntu/ $(get_os_codename) nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
 			else
-				echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/ubuntu/ $(lsb_release -cs) nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
+				echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/ubuntu/ $(get_os_codename) nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
 			fi
 		fi
 		
@@ -908,14 +908,14 @@ stack_builder() {
 	fi
 	
 	if [[ $2 == "php" && $(conf_read php) != "true" ]]; then
-		if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+		if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 			# Fix ondrej issue - https://github.com/oerdnj/deb.sury.org/issues/56
 			#sudo apt install -y language-pack-en-base
 			sudo LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
 		else
 			[[ -f /usr/share/keyrings/php-archive-keyring.gpg && ( ! -s /usr/share/keyrings/php-archive-keyring.gpg || -z $(cat -v /usr/share/keyrings/php-archive-keyring.gpg | grep -m 1 '[^[:space:]]')) ]] && sudo rm -rf /usr/share/keyrings/php-archive-keyring.gpg # Prevent issues!
 			[[ ! -f /usr/share/keyrings/php-archive-keyring.gpg ]] && wget -nv -O- 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xB8DC7E53946656EFBCE4C1DD71DAEAAB4AD4CAB6' | sudo gpg --dearmor -o /usr/share/keyrings/php-archive-keyring.gpg
-			echo "deb [signed-by=/usr/share/keyrings/php-archive-keyring.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/php.list
+			echo "deb [signed-by=/usr/share/keyrings/php-archive-keyring.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu $(get_os_codename) main" | sudo tee /etc/apt/sources.list.d/php.list
 			chmod 644 /usr/share/keyrings/php-archive-keyring.gpg
 		fi
 		
@@ -926,14 +926,14 @@ stack_builder() {
 		[[ $code != "run" ]] && local code=0
 	fi
 	if [[ ( $2 == "php" || $4 == "redis" ) && $(conf_read php-tool-redis) != "true" ]] && ! [[ $4 =~ ^(light|basic)$ ]]; then
-		if [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+		if [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 			# Now there is an Official PPA: https://github.com/redis/redis-debian - https://launchpad.net/~redislabs/+archive/ubuntu/redis
 			# Snap is available but it has no support for ARM architecture: https://snapcraft.io/redis
 			echo | sudo add-apt-repository ppa:redislabs/redis
 		else
 			[[ -f /usr/share/keyrings/redis-archive-keyring.gpg && ( ! -s /usr/share/keyrings/redis-archive-keyring.gpg || -z $(cat -v /usr/share/keyrings/redis-archive-keyring.gpg | grep -m 1 '[^[:space:]]')) ]] && sudo rm -rf /usr/share/keyrings/redis-archive-keyring.gpg # Prevent issues!
 			[[ ! -f /usr/share/keyrings/redis-archive-keyring.gpg ]] && wget -nv -O- https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-			echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+			echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(get_os_codename) main" | sudo tee /etc/apt/sources.list.d/redis.list
 			chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
 		fi
 		
@@ -957,11 +957,11 @@ stack_builder() {
 			# Be aware that they like to change names and syntax unexpectedly at anytime.
 			[[ $(conf_read mysql-ver) == "8.0" ]] && local mysql_repo_name="mysql-$(conf_read mysql-ver)" || local mysql_repo_name="mysql-$(conf_read mysql-ver)-lts"
 			
-			echo "deb [signed-by=/usr/share/keyrings/mysql-archive-keyring.gpg] http://repo.mysql.com/apt/ubuntu $(lsb_release -cs) ${mysql_repo_name}" | sudo tee /etc/apt/sources.list.d/mysql.list
+			echo "deb [signed-by=/usr/share/keyrings/mysql-archive-keyring.gpg] http://repo.mysql.com/apt/ubuntu $(get_os_codename) ${mysql_repo_name}" | sudo tee /etc/apt/sources.list.d/mysql.list
 			chmod 644 /usr/share/keyrings/mysql-archive-keyring.gpg
 		
 		# https://mariadb.org/download/?t=repo-config
-		elif [[ $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+		elif [[ $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 			sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
 			echo | sudo add-apt-repository "deb [arch=amd64,arm64,ppc64el] https://deb.mariadb.org/$(conf_read mysql-ver)/ubuntu $(check_osname) main"
 		else

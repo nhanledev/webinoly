@@ -349,7 +349,7 @@ oneight_to_onenine() {
 	fi
 	
 	# Update Nginx key! https://blog.nginx.org/blog/updating-pgp-key-for-nginx-software
-	if [[ $(conf_read nginx) == "true" && $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(bionic|focal)$ ]]; then
+	if [[ $(conf_read nginx) == "true" && $(get_os_codename) =~ ^(bionic|focal)$ ]]; then
 		sudo apt-key adv --fetch-keys 'https://nginx.org/keys/nginx_signing.key'
 	elif [[ -f /usr/share/keyrings/nginx-archive-keyring.gpg ]]; then
 		rm -rf /usr/share/keyrings/nginx-archive-keyring.gpg
@@ -382,7 +382,7 @@ onenine_to_oneten() {
 	fi
 	
 	# Backups to S3 not working in 24.04
-	[[ $(conf_read nginx-tool-bkp) == "true" && $(lsb_release -c | cut -d':' -f 2 | xargs) == "noble" ]] && sudo /opt/duplicity/bin/pip install boto3
+	[[ $(conf_read nginx-tool-bkp) == "true" && $(get_os_codename) == "noble" ]] && sudo /opt/duplicity/bin/pip install boto3
 }
 
 
@@ -416,7 +416,7 @@ oneeleven_to_onetwelve() {
 
 
 # Update PIP packages!
-if [[ $(conf_read nginx-tool-bkp) == "true" && $(lsb_release -c | cut -d':' -f 2 | xargs) =~ ^(jammy|focal)$ ]]; then
+if [[ $(conf_read nginx-tool-bkp) == "true" && $(get_os_codename) =~ ^(jammy|focal)$ ]]; then
 	sudo pip3 install --upgrade "duplicity==${duplicity_version}" 2>&1 | grep -v "pip as the 'root' user"
 
 # 24.04 or newest...
